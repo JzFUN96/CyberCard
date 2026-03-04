@@ -5,6 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🎀 生日祝福</title>
   <link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  /* 音乐控制按钮 - 右下角悬浮 */
+.music-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff9ec9, #ffb74d);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
+  z-index: 3000;
+  transition: all 0.3s ease;
+  border: 3px solid white;
+  animation: bounce 1.5s infinite alternate;
+}
+@keyframes bounce {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+.music-btn:hover {
+  transform: scale(1.15) rotate(15deg);
+  box-shadow: 0 6px 20px rgba(255, 105, 180, 0.6);
+}
+.music-btn.paused {
+  background: linear-gradient(135deg, #a0a0a0, #d0d0d0);
+  animation: none;
+}
+.music-btn::after {
+  content: "♪";
+  position: absolute;
+  font-size: 1.2rem;
+  bottom: -25px;
+  color: #ff6b9d;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.music-btn:hover::after {
+  opacity: 1;
+}
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -205,6 +251,10 @@
   </style>
 </head>
 <body>
+  <audio id="bgm" loop>
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-happy-birthday-music-box-54.mp3" type="audio/mpeg">
+  您的浏览器不支持音频
+</audio>
   <div class="card">
     <div class="header">
       <div class="age-badge">16</div>
@@ -227,7 +277,53 @@
     <div id="surprise">🎁 假装这是一个红包(づ｡◕‿‿◕｡)づ</div>
     
   </div>
+// 音乐控制
+const bgm = document.getElementById('bgm');
+const musicBtn = document.createElement('div');
+musicBtn.className = 'music-btn';
+musicBtn.innerHTML = '🎵';
+musicBtn.id = 'music-btn';
+document.body.appendChild(musicBtn);
 
+let isPlaying = false;
+musicBtn.addEventListener('click', () => {
+  if (isPlaying) {
+    bgm.pause();
+    musicBtn.innerHTML = '🎵';
+    musicBtn.classList.remove('paused');
+    isPlaying = false;
+  } else {
+    bgm.play().then(() => {
+      musicBtn.innerHTML = '⏸️';
+      musicBtn.classList.add('paused');
+      isPlaying = true;
+    }).catch(e => {
+      // 播放被阻止时的友好提示
+      alert('🎵 小提示：请点击页面任意位置激活音频哦～\n（这是浏览器的安全小规则✨）');
+      // 监听下一次页面点击
+      const activateAudio = () => {
+        bgm.play().then(() => {
+          musicBtn.innerHTML = '⏸️';
+          musicBtn.classList.add('paused');
+          isPlaying = true;
+          document.body.removeEventListener('click', activateAudio);
+        }).catch(() => alert('还是不行？可能是浏览器设置问题呢~'));
+      };
+      document.body.addEventListener('click', activateAudio, { once: true });
+    });
+  }
+});
+
+// 彩蛋：双击贺卡任意位置也能控制音乐！
+document.querySelector('.card').addEventListener('dblclick', () => {
+  if (!isPlaying) {
+    bgm.play().then(() => {
+      musicBtn.innerHTML = '⏸️';
+      musicBtn.classList.add('paused');
+      isPlaying = true;
+    }).catch(() => {});
+  }
+});
   <script>
     // 飘落爱心背景
     function createHearts() {
@@ -322,4 +418,5 @@
   </script>
 </body>
 </html>
+
 
